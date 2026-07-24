@@ -2,9 +2,42 @@
 
 Autonomous software engineering platform with a **Repository Intelligence Engine**.
 
+[![Portfolio](https://img.shields.io/badge/Live_portfolio-nithin078.github.io-5b8cff?style=flat-square)](https://nithin078.github.io)
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![CLI](https://img.shields.io/badge/CLI-aegis-111827?style=flat-square)](https://github.com/Nithin078/Aegis-Engineer)
+
 Aegis understands codebases through AST analysis, call graphs, dependency graphs, LSP integration, and semantic search — then uses that understanding to analyze issues, plan implementations, generate code, run tests, and open pull requests.
 
-> **Status:** Phase 0 foundation. The CLI is installable; agent pipeline, intelligence engine, and full workflow are built in later phases.
+> **Status:** Active development — CLI foundation is installable; multi-agent pipeline and repo intelligence are expanding phase by phase.  
+> **Portfolio:** [nithin078.github.io](https://nithin078.github.io)
+
+## What it aims to do
+
+```text
+GitHub Issue  →  Repo Intelligence (AST / LSP / semantic search)
+                         │
+                         ▼
+              Plan → Edit → Verify → Open PR
+```
+
+| Capability | Approach |
+|------------|----------|
+| Repository understanding | ASTs, call graphs, LSP, semantic search |
+| Execution | Multi-agent orchestration (plan / edit / verify) |
+| Output | Reviewable diffs and PR-style changes — not free-form chat |
+
+## Quick demo (CLI)
+
+```bash
+git clone https://github.com/Nithin078/Aegis-Engineer.git
+cd Aegis-Engineer
+python -m venv .venv && .venv\Scripts\activate
+pip install -e ".[dev]"
+aegis version
+aegis doctor --verbose
+aegis session create --title "Demo session"
+aegis session list
+```
 
 ## Requirements
 
