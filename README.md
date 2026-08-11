@@ -2,7 +2,7 @@
 
 **Autonomous software engineering platform with a Repository Intelligence Engine.**
 
-Aegis understands a codebase (structure, imports, calls, dependencies), then uses multi-agent workflows to plan and apply changes, run tests, review for security/performance/regression risk, remember past fixes, and optionally open a GitHub pull request. It ships as a local-first CLI with a TUI, HTTP API, and full observability.
+Aegis understands a codebase (structure, imports, calls, dependencies), then uses multi-agent workflows to plan and apply changes, run tests, review for security/performance/regression risk, remember past fixes, and optionally open a GitHub pull request. Agents can also **fetch and scrape public web pages** for external docs. It ships as a local-first CLI with a TUI, HTTP API, and full observability.
 
 | | |
 |---|---|
@@ -25,7 +25,7 @@ Aegis understands a codebase (structure, imports, calls, dependencies), then use
 7. [Command master guide](#command-master-guide)
    - [Getting started & diagnostics](#1-getting-started--diagnostics)
    - [Configuration](#2-configuration)
-   - [Interactive chat (TUI / run / serve)](#3-interactive-chat-tui--run--serve)
+   - [Interactive chat, fetch & server](#3-interactive-chat-fetch--server)
    - [Sessions](#4-sessions)
    - [Autonomous solve](#5-autonomous-solve)
    - [Repository intelligence](#6-repository-intelligence)
@@ -95,6 +95,15 @@ You can use it as:
 - Fetch public/private issues by URL or `owner/repo#N`  
 - Optional push + open PR (`--create-pr`, needs token + rights)  
 
+### Web scraping / fetch
+
+- **`webfetch` agent tool** — pull public HTTP/HTTPS pages into the agent context  
+- **`aegis fetch` CLI** — same scrape path without an LLM  
+- HTML → readable plain text (strips scripts/styles), optional link extraction  
+- JSON / plain-text / raw body modes  
+- **SSRF protection:** blocks localhost, private IPs, link-local, and cloud metadata hosts  
+- Used by chat, TUI, and solve specialists (classifier, planner, retriever, doc retriever, coder)  
+
 ### Quality & docs
 
 - Secrets scan, unit/integration tests, optional lint  
@@ -109,6 +118,7 @@ You can use it as:
 ### Platform
 
 - OpenAI-compatible providers (Groq, OpenRouter, Ollama) + Anthropic  
+- Core tools: `read`, `write`, `edit`, `glob`, `grep`, `bash`, `graph_query`, `codesearch`, **`webfetch`**  
 - Trust modes: `interactive` | `yolo` | `readonly` | `ci`  
 - Plugin hooks + MCP tool bridge skeleton  
 - Docker image + GitHub Actions CI  
@@ -292,6 +302,20 @@ aegis benchmark run
 aegis doctor
 ```
 
+### F. Scrape a public web page (no API key)
+
+```bash
+aegis fetch https://example.com
+aegis fetch https://docs.python.org/3/library/ast.html --links -o ast-docs.txt
+aegis fetch https://httpbin.org/json --raw --json
+```
+
+Agents can do the same via the `webfetch` tool:
+
+```bash
+aegis run "Fetch https://example.com and summarize the page in 3 bullets"
+```
+
 ---
 
 ## Command master guide
@@ -362,11 +386,11 @@ aegis config unset provider.model
 
 ---
 
-### 3. Interactive chat (TUI / run / serve)
+### 3. Interactive chat, fetch & server
 
 #### `aegis` / `aegis tui`
 
-**When:** Interactive coding assistant in the terminal — explore, ask, edit with permission UI.
+**When:** Interactive coding assistant in the terminal — explore, ask, edit with permission UI. The TUI agent can call **`webfetch`** for public URLs.
 
 ```bash
 aegis
@@ -384,25 +408,50 @@ aegis tui --server http://127.0.0.1:4096   # attach to aegis serve
 | `--trust-mode` | `interactive` (default) / `yolo` / `readonly` / `ci` |
 | `--server` | Use HTTP backend instead of in-process agent |
 
-#### `aegis fetch`
+#### `aegis fetch` (web scrape)
 
-**When:** Scrape a **public** web page to plain text (no LLM). Useful for docs/issues; blocked for localhost/private IPs (SSRF protection).
+**When:** You need the **text of a public web page** without starting an agent — docs, blog posts, public API JSON, issue HTML, etc.
 
 ```bash
+# HTML page → plain text
 aegis fetch https://example.com
+
+# Keep hyperlinks from the page
 aegis fetch https://example.com/docs --links -o page.txt
-aegis fetch https://api.example.com/data.json --raw --json
+
+# JSON or non-HTML body
+aegis fetch https://httpbin.org/json --raw
+
+# Machine-readable wrapper
+aegis fetch https://example.com --json
 ```
 
 | Option | Purpose |
 |--------|---------|
-| `--max-chars` | Cap output size (default 50k) |
-| `--links` | Append extracted hyperlinks from HTML |
-| `--raw` | Skip HTML→text extraction |
-| `-o` | Write body to a file |
-| `-j` | JSON with metadata |
+| `url` (required) | `http://` or `https://` only |
+| `--max-chars` | Cap extracted text size (default **50000**, max 200000) |
+| `--links` | Append `## Links` section from `<a href>` tags |
+| `--raw` | Skip HTML→text; return truncated body as-is |
+| `-o` / `--output` | Write scraped text to a file |
+| `-j` / `--json` | `{ error, title, output, metadata }` |
 
-Agents also get a **`webfetch`** tool (`aegis run` / TUI / solve specialists) for the same capability.
+**Safety / limits**
+
+| Rule | Behavior |
+|------|----------|
+| Schemes | Only `http` and `https` |
+| Local/private hosts | **Blocked** (localhost, `127.0.0.1`, RFC1918, link-local, metadata hosts) |
+| Redirects | Followed (max 5); final host re-validated |
+| Timeout | Uses tool timeout (CLI ~30s) |
+| Size | Text truncated to `--max-chars` |
+
+**Agent tool:** same implementation is registered as **`webfetch`** for `aegis run`, TUI, and solve specialists.
+
+```bash
+aegis run "Use webfetch on https://peps.python.org/pep-0008/ and list 5 style rules"
+```
+
+> **Note:** This is page fetch + HTML text extraction, not a full browser crawler (no JS rendering, no site-wide spidering). For GitHub **issues/PRs as structured data**, prefer `aegis solve <issue-url>` / the GitHub client rather than scraping `github.com` HTML.
 
 #### `aegis run`
 
@@ -704,6 +753,8 @@ aegis benchmark run -t add_bug --json
 | Set Groq/OpenAI keys | Edit `~/.config/aegis/.env` + `config list` |
 | Chat / explore interactively | `tui` or bare `aegis` |
 | One automation task | `run "…"` |
+| Scrape a public URL (no LLM) | **`fetch <url>`** |
+| Agent reads a public URL | `run` / TUI with **`webfetch` tool** |
 | HTTP API for clients | `serve` |
 | Full autonomous fix | `solve` (start with `--dry-run`) |
 | GitHub issue plan only | `solve <url> --dry-run` |
@@ -739,6 +790,16 @@ aegis intelligence build
 aegis intelligence status
 aegis intelligence search "authentication"
 aegis tui
+```
+
+### Workflow 2b — Pull external docs into a task
+
+```bash
+# Offline scrape first
+aegis fetch https://docs.python.org/3/library/asyncio.html -o /tmp/asyncio.txt
+
+# Or let the agent fetch during the task
+aegis run "Fetch https://docs.python.org/3/library/asyncio.html and explain TaskGroup for this repo"
 ```
 
 ### Workflow 3 — Bugfix with review trail
@@ -831,6 +892,7 @@ CLI (Typer) ──► TUI / run / solve / serve
 | Config, sessions, tools, permissions | ✅ |
 | Providers (OpenAI-compatible + Anthropic + mock) | ✅ |
 | TUI + `run` + HTTP/SSE | ✅ |
+| **Web scrape (`aegis fetch` / `webfetch` tool)** | ✅ |
 | Quality gate + push + living docs | ✅ |
 | Python intelligence + hybrid search | ✅ |
 | Full solve + reviews + PR draft | ✅ |
@@ -839,6 +901,7 @@ CLI (Typer) ──► TUI / run / solve / serve
 | Memory + observe + benchmark | ✅ |
 | Plugin hooks + MCP bridge skeleton | ✅ |
 | CI workflow + Dockerfile | ✅ |
+| Full browser JS rendering / site crawlers | ⬜ not planned for v1 |
 | JS/TS/Go/Rust full graphs | ⬜ [docs/LANGUAGE_MATRIX.md](docs/LANGUAGE_MATRIX.md) |
 | SWE-bench leaderboard | ⬜ skeleton only |
 | Prometheus / multi-lang LSP | ⬜ post-v1 |
