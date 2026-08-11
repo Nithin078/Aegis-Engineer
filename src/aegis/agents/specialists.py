@@ -33,7 +33,8 @@ Honor memory hints: reuse successful patterns; avoid known failures.
 
 RETRIEVE_PROMPT = """\
 You are the Context Retrieval Agent for Aegis Engineer.
-Gather the most relevant code context for the plan. Use read, grep, glob, graph_query, codesearch, webfetch.
+Gather the most relevant code context for the plan.
+Use read, grep, glob, graph_query, codesearch, webfetch.
 Respond with ONLY valid JSON:
 {
   "notes": "brief synthesis",
@@ -45,7 +46,8 @@ Respond with ONLY valid JSON:
 
 DOC_RETRIEVE_PROMPT = """\
 You are the Documentation Retrieval Agent for Aegis Engineer.
-Find docs/README/comments relevant to the issue. Use read, glob, grep, webfetch for public docs URLs.
+Find docs/README/comments relevant to the issue.
+Use read, glob, grep, webfetch for public docs URLs.
 Respond with ONLY valid JSON:
 {
   "notes": "what docs say about the subsystem",
