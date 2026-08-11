@@ -63,6 +63,7 @@ You can use it as:
 | **`aegis run`** | One-shot scripts/CI-style agent tasks |
 | **`aegis solve`** | End-to-end issue fixing with tests and reviews |
 | **`aegis serve`** | Remote clients / HTTP + SSE integration |
+| **`aegis fetch`** | Scrape a public URL to readable text (no LLM) |
 | **Intelligence CLI** | “Who calls X?”, impact analysis, hybrid search (no LLM required) |
 
 ---
@@ -382,6 +383,26 @@ aegis tui --server http://127.0.0.1:4096   # attach to aegis serve
 | `-p` / `--provider` | Override provider |
 | `--trust-mode` | `interactive` (default) / `yolo` / `readonly` / `ci` |
 | `--server` | Use HTTP backend instead of in-process agent |
+
+#### `aegis fetch`
+
+**When:** Scrape a **public** web page to plain text (no LLM). Useful for docs/issues; blocked for localhost/private IPs (SSRF protection).
+
+```bash
+aegis fetch https://example.com
+aegis fetch https://example.com/docs --links -o page.txt
+aegis fetch https://api.example.com/data.json --raw --json
+```
+
+| Option | Purpose |
+|--------|---------|
+| `--max-chars` | Cap output size (default 50k) |
+| `--links` | Append extracted hyperlinks from HTML |
+| `--raw` | Skip HTML→text extraction |
+| `-o` | Write body to a file |
+| `-j` | JSON with metadata |
+
+Agents also get a **`webfetch`** tool (`aegis run` / TUI / solve specialists) for the same capability.
 
 #### `aegis run`
 

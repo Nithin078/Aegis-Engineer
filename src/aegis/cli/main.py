@@ -11,6 +11,7 @@ from aegis.cli.commands.benchmark_cmd import app as benchmark_app
 from aegis.cli.commands.config import app as config_app
 from aegis.cli.commands.doctor import doctor
 from aegis.cli.commands.document import document_command
+from aegis.cli.commands.fetch import fetch_command
 from aegis.cli.commands.intelligence import app as intelligence_app
 from aegis.cli.commands.memory_cmd import app as memory_app
 from aegis.cli.commands.observe import app as observe_app
@@ -85,6 +86,7 @@ app.command("serve")(serve_command)
 app.command("tui")(tui_command)
 app.command("push")(push_command)
 app.command("document")(document_command)
+app.command("fetch")(fetch_command)
 app.command("solve")(solve_command)
 app.add_typer(intelligence_app, name="intelligence")
 app.add_typer(memory_app, name="memory")

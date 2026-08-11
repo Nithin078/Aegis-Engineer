@@ -19,6 +19,7 @@ from aegis.tools.glob_tool import GlobTool
 from aegis.tools.graph_query import GraphQueryTool
 from aegis.tools.grep import GrepTool
 from aegis.tools.read import ReadTool
+from aegis.tools.webfetch import WebFetchTool
 from aegis.tools.write import WriteTool
 
 AskHandler = Callable[[str, str, dict[str, Any]], Awaitable[bool] | bool]
@@ -213,6 +214,7 @@ def create_default_registry(
         BashTool(),
         GraphQueryTool(),
         CodeSearchTool(),
+        WebFetchTool(),
     ):
         registry.register(tool)
     return registry

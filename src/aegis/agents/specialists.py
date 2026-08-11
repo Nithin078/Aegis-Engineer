@@ -14,7 +14,7 @@ Classify the software issue. Respond with ONLY valid JSON:
   "subsystems": ["..."],
   "estimated_files": ["path/to/file.py"]
 }
-Use tools (read, grep, glob, graph_query, codesearch) if needed to inspect the repo.
+Use tools (read, grep, glob, graph_query, codesearch, webfetch) if needed.
 """
 
 PLAN_PROMPT = """\
@@ -33,7 +33,7 @@ Honor memory hints: reuse successful patterns; avoid known failures.
 
 RETRIEVE_PROMPT = """\
 You are the Context Retrieval Agent for Aegis Engineer.
-Gather the most relevant code context for the plan. Use read, grep, glob, graph_query, codesearch.
+Gather the most relevant code context for the plan. Use read, grep, glob, graph_query, codesearch, webfetch.
 Respond with ONLY valid JSON:
 {
   "notes": "brief synthesis",
@@ -45,7 +45,7 @@ Respond with ONLY valid JSON:
 
 DOC_RETRIEVE_PROMPT = """\
 You are the Documentation Retrieval Agent for Aegis Engineer.
-Find docs/README/comments relevant to the issue. Use read, glob, grep.
+Find docs/README/comments relevant to the issue. Use read, glob, grep, webfetch for public docs URLs.
 Respond with ONLY valid JSON:
 {
   "notes": "what docs say about the subsystem",
@@ -162,7 +162,7 @@ def make_classifier(*, max_iterations: int = 8) -> Agent:
     return Agent(
         name="classifier",
         system_prompt=CLASSIFY_PROMPT,
-        permissions=["read"],
+        permissions=["read", "network"],
         max_iterations=max_iterations,
     )
 
@@ -171,7 +171,7 @@ def make_planner(*, max_iterations: int = 10) -> Agent:
     return Agent(
         name="planner",
         system_prompt=PLAN_PROMPT,
-        permissions=["read"],
+        permissions=["read", "network"],
         max_iterations=max_iterations,
     )
 
@@ -180,7 +180,7 @@ def make_retriever(*, max_iterations: int = 12) -> Agent:
     return Agent(
         name="retriever",
         system_prompt=RETRIEVE_PROMPT,
-        permissions=["read"],
+        permissions=["read", "network"],
         max_iterations=max_iterations,
     )
 
@@ -189,7 +189,7 @@ def make_doc_retriever(*, max_iterations: int = 10) -> Agent:
     return Agent(
         name="doc_retriever",
         system_prompt=DOC_RETRIEVE_PROMPT,
-        permissions=["read"],
+        permissions=["read", "network"],
         max_iterations=max_iterations,
     )
 
@@ -198,7 +198,7 @@ def make_coder(*, max_iterations: int = 15) -> Agent:
     return Agent(
         name="coder",
         system_prompt=CODER_PROMPT,
-        permissions=["read", "write", "shell"],
+        permissions=["read", "write", "shell", "network"],
         max_iterations=max_iterations,
     )
 

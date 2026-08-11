@@ -41,11 +41,12 @@ class PermissionsConfig(BaseModel):
             PermissionRule(tool="glob", agent="*", level="allow"),
             PermissionRule(tool="grep", agent="*", level="allow"),
             PermissionRule(tool="graph_query", agent="*", level="allow"),
+            PermissionRule(tool="codesearch", agent="*", level="allow"),
+            PermissionRule(tool="webfetch", agent="*", level="allow"),
             PermissionRule(tool="write", agent="coder", level="allow"),
             PermissionRule(tool="write", agent="pr_generator", level="allow"),
             PermissionRule(tool="bash", agent="tester", level="allow"),
             PermissionRule(tool="bash", agent="coder", level="ask"),
-            PermissionRule(tool="webfetch", agent="doc_retriever", level="allow"),
         ]
     )
 
