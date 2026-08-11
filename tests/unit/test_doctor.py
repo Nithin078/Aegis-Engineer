@@ -18,6 +18,9 @@ def test_run_checks_all_pass_in_dev_env() -> None:
     assert "Python version" in names
     assert "Package import" in names
     assert "CLI entry" in names
+    assert "Observability" in names
+    assert "Agents" in names
+    assert "Tools" in names
 
 
 def test_doctor_command_success() -> None:

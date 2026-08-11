@@ -85,8 +85,17 @@ def config_unset(
 
 @app.command("path")
 def config_path() -> None:
-    """Show config and database paths."""
+    """Show config, database, and .env paths."""
+    from pathlib import Path
+
     from aegis.config.loader import get_db_path, get_user_config_path
 
-    console.print(f"User config: {get_user_config_path()}")
-    console.print(f"Database:    {get_db_path()}")
+    project_env = Path.cwd() / ".env"
+    user_env = get_user_config_path().parent / ".env"
+    project_status = "exists" if project_env.is_file() else "missing"
+    user_status = "exists" if user_env.is_file() else "missing"
+
+    console.print(f"User config:  {get_user_config_path()}")
+    console.print(f"Database:     {get_db_path()}")
+    console.print(f"Project .env: {project_env} ({project_status})")
+    console.print(f"User .env:    {user_env} ({user_status})")

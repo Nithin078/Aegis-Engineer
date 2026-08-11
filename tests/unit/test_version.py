@@ -39,3 +39,11 @@ def test_global_version_flag() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
     assert __version__ in result.stdout
+
+
+def test_module_main_importable() -> None:
+    """`python -m aegis` entry exists."""
+    import importlib
+
+    mod = importlib.import_module("aegis.__main__")
+    assert hasattr(mod, "app")

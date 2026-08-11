@@ -67,33 +67,33 @@ Unlike traditional coding assistants that treat repositories as flat text, Aegis
         ┌──────────────────────────┼──────────────────────────┐
         ▼                          ▼                          ▼
 ┌───────────────┐    ┌─────────────────────┐    ┌──────────────────────┐
-│  Intelligence │    │    Agent Pipeline    │    │   Memory System      │
-│    Layer      │    │                      │    │                      │
-├───────────────┤    ├──────────────────────┤    ├──────────────────────┤
-│ Repository    │───►│ 1. Issue Classifier  │───►│ Repository Memory    │
-│ Intelligence  │    │ 2. Dependency        │    │ Global Memory        │
-│ Engine        │    │    Analyzer          │    │ Developer Prefs      │
-│               │    │ 3. Planner           │    │ Failure Memory       │
-│ • AST Graph   │    │ 4. Context Retriever │    └──────────────────────┘
-│ • Call Graph  │    │ 5. Doc Retriever     │
-│ • Import Graph│    │ 6. Coder             │
-│ • Class Graph │    │ 7. Static Analyzer   │
-│ • Dep Graph   │    │ 8. Tester            │
-│ • Knowledge   │    │ 9. Security Reviewer │
-│ • Embeddings  │    │ 10. Perf Reviewer    │
-│ • LSP         │    │ 11. Regression Det.  │
-└───────────────┘    │ 12. PR Generator     │
+│  Intelligence │    │    Agent Pipeline   │    │   Memory System      │
+│    Layer      │    │                     │    │                      │
+├───────────────┤    ├─────────────────────┤    ├──────────────────────┤
+│ Repository    │───►│ 1. Issue Classifier │───►│ Repository Memory    │
+│ Intelligence  │    │ 2. Dependency       │    │ Global Memory        │
+│ Engine        │    │    Analyzer         │    │ Developer Prefs      │
+│               │    │ 3. Planner          │    │ Failure Memory       │
+│ • AST Graph   │    │ 4. Context Retriever│    └──────────────────────┘
+│ • Call Graph  │    │ 5. Doc Retriever    │
+│ • Import Graph│    │ 6. Coder            │
+│ • Class Graph │    │ 7. Static Analyzer  │
+│ • Dep Graph   │    │ 8. Tester           │
+│ • Knowledge   │    │ 9. Security Reviewer│
+│ • Embeddings  │    │ 10. Perf Reviewer   │
+│ • LSP         │    │ 11. Regression Det. │
+└───────────────┘    │ 12. PR Generator    │
+                     └──────────┬──────────┘
+                                │
+                     ┌──────────▼───────────┐
+                     │  Docker Sandbox      │
+                     │  Formatter → Linter  │
+                     │  → Tests → Review    │
                      └──────────┬───────────┘
                                 │
                      ┌──────────▼───────────┐
-                     │  Docker Sandbox       │
-                     │  Formatter → Linter   │
-                     │  → Tests → Review     │
-                     └──────────┬───────────┘
-                                │
-                     ┌──────────▼───────────┐
-                     │     GitHub API        │
-                     │  Push → PR → Review   │
+                     │     GitHub API       │
+                     │  Push → PR → Review  │
                      └──────────────────────┘
 
 Supporting:
@@ -110,14 +110,14 @@ Aegis Engineer follows a **client/server architecture** inspired by OpenCode. Th
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│                   CLI Entry Point                    │
-│                  (Typer framework)                   │
+│                   CLI Entry Point                   │
+│                  (Typer framework)                  │
 └──────────────┬──────────────────────┬───────────────┘
                │                      │
                ▼                      ▼
      ┌─────────────────┐   ┌─────────────────────┐
-     │   TUI Client    │   │  Non-Interactive     │
-     │  (Textual)      │   │  Mode (run/solve)    │
+     │   TUI Client    │   │  Non-Interactive    │
+     │  (Textual)      │   │  Mode (run/solve)   │
      └────────┬────────┘   └──────────┬──────────┘
               │                       │
               └───────────┬───────────┘

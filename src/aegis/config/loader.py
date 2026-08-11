@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from aegis.config.defaults import default_config
+from aegis.config.env import load_env
 from aegis.config.schema import (
     AegisConfig,
     parse_cli_value,
@@ -121,7 +122,12 @@ def load_config(
     user_config_path: Path | None = None,
     apply_env: bool = True,
 ) -> AegisConfig:
-    """Load config: defaults < user file < project file < env vars."""
+    """Load config: defaults < user file < project file < env vars.
+
+    Also loads project/user ``.env`` files first (without overriding real env).
+    """
+    load_env(project_dir=project_dir)
+
     merged: dict[str, Any] = default_config().model_dump(mode="json")
 
     user_path = user_config_path or get_user_config_path()

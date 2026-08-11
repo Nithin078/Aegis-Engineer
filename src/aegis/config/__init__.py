@@ -1,5 +1,6 @@
 """Configuration system for Aegis Engineer."""
 
+from aegis.config.env import load_env
 from aegis.config.loader import (
     get_config_dir,
     get_db_path,
@@ -14,6 +15,7 @@ __all__ = [
     "get_config_dir",
     "get_db_path",
     "load_config",
+    "load_env",
     "set_config_value",
     "unset_config_value",
 ]

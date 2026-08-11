@@ -74,9 +74,12 @@ class MemoryConfig(BaseModel):
 
 
 class ExecutionConfig(BaseModel):
-    sandbox_image: str = "aegis-sandbox:latest"
+    sandbox_image: str = "python:3.12-slim"
     timeout: float = 120.0
     mem_limit: str = "512m"
+    prefer_docker: bool = False  # local-first; enable for stronger isolation
+    use_worktree: bool = True  # isolate solve edits in a git worktree when possible
+    snapshot: bool = True  # capture file snapshot before code stage
 
 
 class ObservabilityConfig(BaseModel):

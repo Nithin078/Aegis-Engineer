@@ -78,8 +78,134 @@ def _check_database() -> CheckResult:
         return CheckResult("Database", False, str(exc))
 
 
+def _check_llm_provider() -> CheckResult:
+    try:
+        from aegis.providers.factory import provider_configured
+
+        _has_key, detail = provider_configured()
+        # Missing keys are informational for doctor (run will fail hard if needed).
+        return CheckResult("LLM provider", True, detail)
+    except Exception as exc:
+        return CheckResult("LLM provider", False, str(exc))
+
+
+def _check_git() -> CheckResult:
+    import shutil
+    import subprocess
+
+    if not shutil.which("git"):
+        return CheckResult("Git", False, "git not found on PATH")
+    try:
+        proc = subprocess.run(
+            ["git", "--version"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            encoding="utf-8",
+            errors="replace",
+        )
+        detail = (proc.stdout or proc.stderr or "").strip() or "git available"
+        return CheckResult("Git", proc.returncode == 0, detail)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return CheckResult("Git", False, str(exc))
+
+
+def _check_docker() -> CheckResult:
+    try:
+        from aegis.execution.docker import docker_status
+
+        st = docker_status()
+        if st.get("daemon_available"):
+            ver = st.get("client_version") or "unknown"
+            return CheckResult("Docker", True, f"daemon up · client {ver}")
+        if st.get("cli_path"):
+            return CheckResult(
+                "Docker",
+                True,
+                f"CLI at {st['cli_path']} (daemon unavailable — local fallback)",
+            )
+        return CheckResult("Docker", True, "not installed (local execution fallback)")
+    except Exception as exc:
+        return CheckResult("Docker", False, str(exc))
+
+
+def _check_github_token() -> CheckResult:
+    try:
+        from aegis.github.client import resolve_github_token
+
+        token = resolve_github_token()
+        if token:
+            return CheckResult("GitHub token", True, "GITHUB_TOKEN/GH_TOKEN set")
+        return CheckResult(
+            "GitHub token",
+            True,
+            "not set (optional — needed for private issues / PR create)",
+        )
+    except Exception as exc:
+        return CheckResult("GitHub token", False, str(exc))
+
+
+def _check_tools() -> CheckResult:
+    try:
+        from aegis.tools.registry import create_default_registry
+
+        reg = create_default_registry()
+        names = sorted(t.name for t in reg.list_tools())
+        return CheckResult("Tools", True, f"{len(names)} registered: {', '.join(names[:8])}…")
+    except Exception as exc:
+        return CheckResult("Tools", False, str(exc))
+
+
+def _check_agents() -> CheckResult:
+    try:
+        from aegis.agents.specialists import AGENT_FACTORIES
+
+        names = ", ".join(sorted(AGENT_FACTORIES))
+        return CheckResult("Agents", True, f"{len(AGENT_FACTORIES)} specialists: {names}")
+    except Exception as exc:
+        return CheckResult("Agents", False, str(exc))
+
+
+def _check_intelligence() -> CheckResult:
+    try:
+        from aegis.intelligence.engine import IntelligenceEngine
+
+        _ = IntelligenceEngine
+        return CheckResult(
+            "Intelligence",
+            True,
+            "Python AST/NetworkX ready; JS/TS deferred (see LANGUAGE_MATRIX)",
+        )
+    except Exception as exc:
+        return CheckResult("Intelligence", False, str(exc))
+
+
+def _check_observability() -> CheckResult:
+    try:
+        from aegis.observability.models import SessionTrace
+
+        _ = SessionTrace()
+        return CheckResult("Observability", True, "trace collector + observe CLI")
+    except Exception as exc:
+        return CheckResult("Observability", False, str(exc))
+
+
+def _check_plugins() -> CheckResult:
+    try:
+        from aegis.plugins.hooks import get_hooks
+
+        counts = get_hooks().list_hooks()
+        return CheckResult(
+            "Plugins",
+            True,
+            f"hooks ready ({sum(counts.values())} registered): {counts}",
+        )
+    except Exception as exc:
+        return CheckResult("Plugins", False, str(exc))
+
+
 def run_checks() -> list[CheckResult]:
-    """Run diagnostic checks. More checks are added in later phases."""
+    """Run installation and environment diagnostics."""
     return [
         CheckResult("Aegis version", True, __version__),
         _check_python_version(),
@@ -88,8 +214,15 @@ def run_checks() -> list[CheckResult]:
         _check_cli_entry(),
         _check_config(),
         _check_database(),
-        # Stub for upcoming phases — not a failure yet.
-        CheckResult("LLM provider", True, "not configured yet (Phase 3)"),
+        _check_llm_provider(),
+        _check_git(),
+        _check_docker(),
+        _check_github_token(),
+        _check_tools(),
+        _check_agents(),
+        _check_intelligence(),
+        _check_observability(),
+        _check_plugins(),
     ]
 
 
